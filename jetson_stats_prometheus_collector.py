@@ -1,15 +1,20 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import time
 import atexit
 import os
-import random
 from jtop import jtop, JtopException
 from prometheus_client.core import InfoMetricFamily, GaugeMetricFamily, REGISTRY, CounterMetricFamily
-# from prometheus_client import start_http_server
 from prometheus_client import make_wsgi_app
 from wsgiref.simple_server import make_server
+from base64 import b64encode
+
+string_to_encode = os.environ.get("USERNAME")+':'+os.environ.get("PASSWORD")
+bytes_to_encode = string_to_encode.encode('utf-8')
+base64_encoded = b64encode(bytes_to_encode)
+base64_encoded_string = base64_encoded.decode('utf-8')
+base64_encoded_string = base64_encoded_string.strip()
+HTTP_AUTH = 'Basic ' + base64_encoded_string
 
 class CustomCollector(object):
     def __init__(self):
@@ -84,9 +89,6 @@ class CustomCollector(object):
             #
             g = GaugeMetricFamily('gpu_usage_gpu', 'GPU % schedutil', labels=['gpu'])
             g.add_metric(['val'], self._jetson.stats['GPU'])
-            # g.add_metric(['frq'], self._jetson.gpu['frq'])
-            # g.add_metric(['min_freq'], self._jetson.gpu['min_freq'])
-            # g.add_metric(['max_freq'], self._jetson.gpu['max_freq'])
             yield g
 
             #
@@ -94,10 +96,6 @@ class CustomCollector(object):
             #
             g = GaugeMetricFamily('gpu_usage_fan', 'Fan usage', labels=['fan'])
             g.add_metric(['speed'], self._jetson.fan.get('speed', self._jetson.fan.get('pwmfan', {'speed': [0] })['speed'][0]))
-            # g.add_metric(['measure'], self._jetson.fan['measure'])
-            # g.add_metric(['auto'], self._jetson.fan['auto'])
-            # g.add_metric(['rpm'], self._jetson.fan['rpm'])
-            # g.add_metric(['mode'], self._jetson.fan['mode'])
             yield g
 
             #
@@ -147,13 +145,6 @@ class CustomCollector(object):
             except AttributeError:
                 # key doesn't exist in dict
                 i = 0
-from base64 import b64encode
-string_to_encode = os.environ.get("USERNAME")+':'+os.environ.get("PASSWORD")
-bytes_to_encode = string_to_encode.encode('utf-8')
-base64_encoded = b64encode(bytes_to_encode)
-base64_encoded_string = base64_encoded.decode('utf-8')
-base64_encoded_string = base64_encoded_string.strip()
-HTTP_AUTH = 'Basic ' + base64_encoded_string
 
 class Auth():
     def __init__(self, app):
@@ -165,14 +156,9 @@ class Auth():
         return self._login(environ, start_response)
 
     def _authenticated(self, header):
-        # from base64 import b64decode
         if not header:
             return False
         return header == HTTP_AUTH
-        # _, encoded = header.split(None, 1)
-        # decoded = b64decode(encoded).decode('UTF-8')
-        # username, password = decoded.split(':', 1)
-        # return username == os.environ.get("USERNAME") and password == os.environ.get("PASSWORD")
 
     def _login(self, environ, start_response):
         start_response('401 Authentication Required',
@@ -184,22 +170,9 @@ if __name__ == '__main__':
     port = os.environ.get('PORT', 9998)
     REGISTRY.register(CustomCollector())
     app = make_wsgi_app()
-    httpd = make_server('', port, Auth(app))
+    httpd = make_server('', int(port), Auth(app))
     print('Serving on port: ', port)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         print('Goodbye!')
-
-# if __name__ == '__main__':
-#     # parser = argparse.ArgumentParser()
-#     # parser.add_argument('--port', type=int, default=8000, help='Metrics collector port number')
-#     # args = parser.parse_args()
-#     port = os.environ.get('PORT', 9998)
-#     start_http_server(port)
-#     username = os.environ.get("USERNAME")
-#     password = os.environ.get("PASSWORD")
-#     REGISTRY.register(CustomCollector())
-#     while True:
-#         # time.sleep(1)
-#         time.sleep(random.randrange(1,10))
