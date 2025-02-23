@@ -88,7 +88,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 11,
+        "w": 5,
         "x": 0,
         "y": 0
       },
@@ -142,6 +142,143 @@
         }
       ],
       "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cbpbgIz4z"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "rgb(153, 154, 156)",
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "rgb(168, 168, 168)",
+                "value": null
+              },
+              {
+                "color": "light-orange",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "mwatt"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_gpu_cv"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CPU GPU CV"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "TOTAL"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 5,
+        "y": 0
+      },
+      "id": 17,
+      "interval": "5s",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cbpbgIz4z"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "gpu_usage_power",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "Power Usage"
+        }
+      ],
+      "title": "Power Usage",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "valueLabel": "power"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "instance": true,
+              "job": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "ao": "AO",
+              "aux": "AUX",
+              "cpu": "CPU",
+              "cv": "CV",
+              "gpu": "GPU",
+              "soc": "SOC",
+              "sys5v": "SYS5V",
+              "tboard": "Tboard",
+              "tdiode": "Tdiode",
+              "thermal": "Thermal",
+              "vddrq": "VDDRQ"
+            }
+          }
+        }
+      ],
       "type": "stat"
     },
     {
@@ -828,7 +965,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "light-green",
+            "mode": "palette-classic-by-name"
           },
           "mappings": [],
           "max": 120,
@@ -955,56 +1093,65 @@
         "type": "prometheus",
         "uid": "cbpbgIz4z"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "rgb(153, 154, 156)",
-            "mode": "fixed"
+            "mode": "palette-classic"
           },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 16,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": 3600000,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
           "mappings": [],
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "rgb(168, 168, 168)",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "light-orange",
-                "value": 5
+                "color": "red",
+                "value": 80
               }
             ]
           },
           "unit": "mwatt"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "cpu_gpu_cv"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "CPU GPU CV"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "total"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "TOTAL"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 6,
@@ -1012,80 +1159,32 @@
         "x": 11,
         "y": 16
       },
-      "id": 17,
-      "interval": "5s",
+      "id": 21,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "cbpbgIz4z"
-          },
           "editorMode": "code",
-          "exemplar": true,
           "expr": "gpu_usage_power",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "",
-          "refId": "Power Usage"
+          "legendFormat": "{{power}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Power Usage",
-      "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {
-            "valueLabel": "power"
-          }
-        },
-        {
-          "id": "merge",
-          "options": {}
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "instance": true,
-              "job": true
-            },
-            "indexByName": {},
-            "renameByName": {
-              "ao": "AO",
-              "aux": "AUX",
-              "cpu": "CPU",
-              "cv": "CV",
-              "gpu": "GPU",
-              "soc": "SOC",
-              "sys5v": "SYS5V",
-              "tboard": "Tboard",
-              "tdiode": "Tdiode",
-              "thermal": "Thermal",
-              "vddrq": "VDDRQ"
-            }
-          }
-        }
-      ],
-      "type": "stat"
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -1523,6 +1622,6 @@
   "timezone": "",
   "title": "NVIDIA Jetson Orin Nano",
   "uid": "n6FGltjMz",
-  "version": 10,
+  "version": 11,
   "weekStart": ""
 }
