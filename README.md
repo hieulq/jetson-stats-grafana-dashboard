@@ -3,6 +3,20 @@
 ## Introduction
 This project is a Grafana dashboard, driven by a Prometheus metrics collector, for monitoring NVIDIA Jetson devices Orin Nano operating autonomously in a `headless` fashion (i.e. no connected display and associated user-input devices).
 
+Status:
+
+- Tested only with Jetson Orin Nano
+- Support metrics:
+  - Uptime
+  - Hardware Info (JP version, L4T version, module, SN..)
+  - Power usage
+  - Disk usage
+  - CPU usage
+  - Mem usage
+  - Sensor (tempratures of CPU, GPU, SOC)
+  - GPU Processes
+
+
 ![image info](./grafana_dashboard_panel.png)
 
 ---
@@ -26,27 +40,27 @@ The following hardware and software should already be configured and operational
 2. Next, install the Prometheus metrics collector
 
 	```bash
-	nvidia@agx-desktop $ pip install prometheus-client
-	nvidia@agx-desktop $ sudo cp jetson_stats_prometheus_collector.py /usr/local/bin/
+	hieulq@jetson $ pip install prometheus-client
+	hieulq@jetson $ sudo cp jetson_stats_prometheus_collector.py /usr/local/bin/
 	```
 
 3. Install the Prometheus metrics collector as a system background `systemd` service
 
 	```bash
-	nvidia@agx-desktop $ sudo cp jetson_stats_prometheus_collector.service /etc/systemd/system/
-	nvidia@agx-desktop $ sudo systemctl daemon-reload
-	nvidia@agx-desktop $ sudo systemctl start jetson_stats_prometheus_collector
-	nvidia@agx-desktop $ sudo systemctl status jetson_stats_prometheus_collector
+	hieulq@jetson $ sudo cp jetson_stats_prometheus_collector.service /etc/systemd/system/
+	hieulq@jetson $ sudo systemctl daemon-reload
+	hieulq@jetson $ sudo systemctl start jetson_stats_prometheus_collector
+	hieulq@jetson $ sudo systemctl status jetson_stats_prometheus_collector
 	```
 
 	**Alternatively**, you can install the `systemd` service for the current user as shown below:
 
 	```bash
-	nvidia@agx-desktop $ mkdir -p ~/.config/systemd/user
-	nvidia@agx-desktop $ sudo cp jetson_stats_prometheus_collector.service /etc/systemd/system/
-	nvidia@agx-desktop $ systemctl --user daemon-reload 
-	nvidia@agx-desktop $ systemctl --user start jetson_stats_prometheus_collector
-	nvidia@agx-desktop $ systemctl --user status jetson_stats_prometheus_collector
+	hieulq@jetson $ mkdir -p ~/.config/systemd/user
+	hieulq@jetson $ sudo cp jetson_stats_prometheus_collector.service /etc/systemd/system/
+	hieulq@jetson $ systemctl --user daemon-reload 
+	hieulq@jetson $ systemctl --user start jetson_stats_prometheus_collector
+	hieulq@jetson $ systemctl --user status jetson_stats_prometheus_collector
 	```
 
 
