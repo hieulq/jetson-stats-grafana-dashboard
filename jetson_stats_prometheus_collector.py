@@ -1,6 +1,26 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# MIT License
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import argparse
 import atexit
 import os
 from jtop import jtop, JtopException
@@ -8,13 +28,6 @@ from prometheus_client.core import InfoMetricFamily, GaugeMetricFamily, REGISTRY
 from prometheus_client import make_wsgi_app
 from wsgiref.simple_server import make_server
 from base64 import b64encode
-
-string_to_encode = os.environ.get("USERNAME")+':'+os.environ.get("PASSWORD")
-bytes_to_encode = string_to_encode.encode('utf-8')
-base64_encoded = b64encode(bytes_to_encode)
-base64_encoded_string = base64_encoded.decode('utf-8')
-base64_encoded_string = base64_encoded_string.strip()
-HTTP_AUTH = 'Basic ' + base64_encoded_string
 
 class CustomCollector(object):
     def __init__(self):
@@ -84,6 +97,26 @@ class CustomCollector(object):
             g.add_metric(['cpu_8'], self._jetson.stats['CPU8'] if 'CPU8' in self._jetson.stats else 0)
             yield g
 
+            # 
+            # RAM usage
+            #
+            g = GaugeMetricFamily('gpu_usage_ram', 'Memory usage', labels=['ram'])
+            g.add_metric(['used'], self._jetson.memory['RAM']['used'])
+            g.add_metric(['shared'], self._jetson.memory['RAM']['shared'])
+            g.add_metric(['total'], self._jetson.memory['RAM']['tot'])
+            g.add_metric(['free'], self._jetson.memory['RAM']['free'])
+            yield g
+
+            # 
+            # Disk usage
+            #
+            g = GaugeMetricFamily('gpu_usage_disk', 'Disk space usage', labels=['disk'])
+            g.add_metric(['used'], self._jetson.disk['used'])
+            g.add_metric(['total'], self._jetson.disk['total'])
+            g.add_metric(['available'], self._jetson.disk['available'])
+            g.add_metric(['available_no_root'], self._jetson.disk['available_no_root'])
+            yield g
+
             #
             # GPU usage
             #
@@ -102,7 +135,7 @@ class CustomCollector(object):
             # Sensor temperatures
             #
             g = GaugeMetricFamily('gpu_temperatures', 'Sensor temperatures', labels=['temperature'])
-            keys = ['AO', 'GPU', 'Tdiode', 'AUX', 'CPU', 'thermal', 'Tboard']
+            keys = ['gpu', 'cpu', 'soc0', 'tj']
             for key in keys:
                 if key in self._jetson.temperature:
                     g.add_metric([key.lower()], self._jetson.temperature[key]['temp'] if isinstance(self._jetson.temperature[key], dict) else self._jetson.temperature.get(key, 0))
@@ -112,13 +145,9 @@ class CustomCollector(object):
             #
             g = GaugeMetricFamily('gpu_usage_power', 'Power usage', labels=['power'])
             if isinstance(self._jetson.power, dict):
-                g.add_metric(['cv'], self._jetson.power['rail']['VDD_CPU_CV']['avg'] if 'VDD_CPU_CV' in self._jetson.power['rail'] else self._jetson.power['rail'].get('CV', { 'avg': 0 }).get('avg'))
-                g.add_metric(['gpu'], self._jetson.power['rail']['VDD_GPU_SOC']['avg'] if 'VDD_GPU_SOC' in self._jetson.power['rail'] else self._jetson.power['rail'].get('GPU', { 'avg': 0 }).get('avg'))
-                g.add_metric(['sys5v'], self._jetson.power['rail']['VIN_SYS_5V0']['avg'] if 'VIN_SYS_5V0' in self._jetson.power['rail'] else self._jetson.power['rail'].get('SYS5V', { 'avg': 0 }).get('avg'))
-            if isinstance(self._jetson.power, tuple):
-                g.add_metric(['cv'], self._jetson.power[1]['CV']['cur'] if 'CV' in self._jetson.power[1] else 0)
-                g.add_metric(['gpu'], self._jetson.power[1]['GPU']['cur'] if 'GPU' in self._jetson.power[1] else 0)
-                g.add_metric(['sys5v'], self._jetson.power[1]['SYS5V']['cur'] if 'SYS5V' in self._jetson.power[1] else 0)
+                g.add_metric(['cpu_gpu_cv'], self._jetson.power['rail']['VDD_CPU_GPU_CV']['avg'])
+                g.add_metric(['soc'], self._jetson.power['rail']['VDD_SOC']['avg'])
+                g.add_metric(['total'], self._jetson.power['tot']['avg'])
             yield g
 
             #
@@ -146,32 +175,15 @@ class CustomCollector(object):
                 # key doesn't exist in dict
                 i = 0
 
-class Auth():
-    def __init__(self, app):
-        self._app = app
-
-    def __call__(self, environ, start_response):
-        if self._authenticated(environ.get('HTTP_AUTHORIZATION')):
-            return self._app(environ, start_response)
-        return self._login(environ, start_response)
-
-    def _authenticated(self, header):
-        if not header:
-            return False
-        return header == HTTP_AUTH
-
-    def _login(self, environ, start_response):
-        start_response('401 Authentication Required',
-            [('Content-Type', 'text/html'),
-            ('WWW-Authenticate', 'Basic realm="Login"')])
-        return [b'Login']
-
 if __name__ == '__main__':
-    port = os.environ.get('PORT', 9998)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=9998, help='Metrics collector port number')
+    args = parser.parse_args()
+
     REGISTRY.register(CustomCollector())
     app = make_wsgi_app()
-    httpd = make_server('', int(port), Auth(app))
-    print('Serving on port: ', port)
+    httpd = make_server('', int(args.port), app)
+    print('Serving on port: ', args.port)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

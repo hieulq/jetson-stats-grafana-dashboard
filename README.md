@@ -1,7 +1,7 @@
 # jetson-stats-grafana-dashboard
 
 ## Introduction
-This project is a Grafana dashboard, driven by a Prometheus metrics collector, for monitoring NVIDIA Jetson devices [Xavier NX, Nano, AGX Xavier, TX1, TX2] operating autonomously in a `headless` fashion (i.e. no connected display and associated user-input devices).
+This project is a Grafana dashboard, driven by a Prometheus metrics collector, for monitoring NVIDIA Jetson devices Orin Nano operating autonomously in a `headless` fashion (i.e. no connected display and associated user-input devices).
 
 ![image info](./grafana_dashboard_panel.png)
 
@@ -11,7 +11,7 @@ This project is a Grafana dashboard, driven by a Prometheus metrics collector, f
 
 The following hardware and software should already be configured and operational:
 
-- NVIDIA Jetson device
+- NVIDIA Jetson Orin Nano device, please test this in another Jetson model and make PR if possible
 - A host running [Grafana](https://grafana.com/) 
 - A host running [Prometheus](https://prometheus.io/)
 
