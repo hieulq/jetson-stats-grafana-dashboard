@@ -93,8 +93,8 @@ class CustomCollector(object):
             g.add_metric(['cpu_4'], self._jetson.stats['CPU4'] if 'CPU4' in self._jetson.stats else 0)
             g.add_metric(['cpu_5'], self._jetson.stats['CPU5'] if 'CPU5' in self._jetson.stats else 0)
             g.add_metric(['cpu_6'], self._jetson.stats['CPU6'] if 'CPU6' in self._jetson.stats else 0)
-            g.add_metric(['cpu_7'], self._jetson.stats['CPU7'] if 'CPU7' in self._jetson.stats else 0)
-            g.add_metric(['cpu_8'], self._jetson.stats['CPU8'] if 'CPU8' in self._jetson.stats else 0)
+            # g.add_metric(['cpu_7'], self._jetson.stats['CPU7'] if 'CPU7' in self._jetson.stats else 0)
+            # g.add_metric(['cpu_8'], self._jetson.stats['CPU8'] if 'CPU8' in self._jetson.stats else 0)
             yield g
 
             # 
